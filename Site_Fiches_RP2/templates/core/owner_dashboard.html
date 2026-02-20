@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ target_user.username }} - Détails{% endblock %}
+{% block page_title %}Détails Utilisateur{% endblock %}
+
+{% block content %}
+
+<!-- En-tête utilisateur -->
+<div class="card">
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <div class="user-avatar" style="width: 80px; height: 80px; font-size: 32px;">
+            {% if target_user.avatar %}
+                <img src="{{ target_user.avatar }}" alt="{{ target_user.username }}">
+            {% else %}
+                {{ target_user.username|slice:":1"|upper }}
+            {% endif %}
+        </div>
+        
+        <div style="flex: 1;">
+            <h1 style="margin-bottom: 5px;">{{ target_user.username }}</h1>
+            <div style="color: #b9bbbe; margin-bottom: 10px;">{{ target_user.discord_tag }}</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% if target_user.is_owner %}
+                    <span class="owner-badge">👑 OWNER</span>
+                {% endif %}
+                {% if target_user.is_staff %}
+                    <span class="admin-badge">⚙️ STAFF</span>
+                {% endif %}
+                {% for role in user_roles %}
+                    <span style="background: #5865f2; padding: 4px 10px; border-radius: 4px; font-size: 12px;">{{ role.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div style="text-align: right;">
+            <a href="{% url 'user_edit_roles' target_user.id %}" class="btn btn-primary">🔧 Gérer les rôles</a>
+        </div>
+    </div>
+</div>
+
+<!-- Informations Discord -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">📱 Informations Discord</h2>
+    <div class="grid grid-2">
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Discord ID</div>
+            <code style="background: #36393f; padding: 8px 12px; border-radius: 4px; display: inline-block;">{{ target_user.discord_id }}</code>
+        </div>
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Tag Discord</div>
+            <strong>{{ target_user.discord_tag }}</strong>
+        </div>
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Username Discord</div>
+            <strong>{{ target_user.discord_username }}</strong>
+        </div>
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Email</div>
+            <strong>{{ target_user.email|default:"Non renseigné" }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="grid grid-4" style="margin-top: 20px;">
+    <div class="stat-box">
+        <div class="stat-number">{{ stats.total_fiches }}</div>
+        <div class="stat-label">Fiches Créées</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ stats.total_comments }}</div>
+        <div class="stat-label">Commentaires</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ stats.servers_count }}</div>
+        <div class="stat-label">Serveurs Actifs</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ stats.admin_servers_count }}</div>
+        <div class="stat-label">Serveurs Admin</div>
+    </div>
+</div>
+
+<!-- Informations compte -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">ℹ️ Informations Compte</h2>
+    <div class="grid grid-3">
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Date d'inscription</div>
+            <strong>{{ target_user.date_joined|date:"d/m/Y à H:i" }}</strong>
+        </div>
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Dernière connexion</div>
+            <strong>
+                {% if target_user.last_login %}
+                    {{ target_user.last_login|date:"d/m/Y à H:i" }}
+                {% else %}
+                    Jamais connecté
+                {% endif %}
+            </strong>
+        </div>
+        <div>
+            <div style="color: #b9bbbe; margin-bottom: 5px;">Statut</div>
+            <strong style="color: #3ba55d;">✅ Actif</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Serveurs où l'utilisateur est actif -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">🎮 Serveurs Actifs ({{ active_servers.count }})</h2>
+    {% if active_servers %}
+    <div class="grid grid-3">
+        {% for server in active_servers %}
+        <div class="card" style="background: #36393f;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                {% if server.icon %}
+                    <img src="{{ server.icon }}" style="width: 40px; height: 40px; border-radius: 8px;">
+                {% else %}
+                    <div style="width: 40px; height: 40px; border-radius: 8px; background: #5865f2; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                        {{ server.name|slice:":2"|upper }}
+                    </div>
+                {% endif %}
+                <strong>{{ server.name }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #b9bbbe;">Fiches créées:</span>
+                <strong>{{ server.fiche_count }}</strong>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #b9bbbe; padding: 20px; text-align: center;">Aucun serveur actif</p>
+    {% endif %}
+</div>
+
+<!-- Fiches de l'utilisateur -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">📝 Fiches Créées ({{ fiches.count }})</h2>
+    {% if fiches %}
+    <table>
+        <thead>
+            <tr>
+                <th>Personnage</th>
+                <th>Serveur</th>
+                <th>Date de création</th>
+                <th>Dernière modification</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fiche in fiches %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if fiche.avatar %}
+                            <img src="{{ fiche.avatar.url }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                        {% endif %}
+                        <strong>{{ fiche.prenom }} {{ fiche.nom }}</strong>
+                    </div>
+                </td>
+                <td>{{ fiche.server.name }}</td>
+                <td>{{ fiche.created_at|date:"d/m/Y H:i" }}</td>
+                <td>{{ fiche.updated_at|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'fiche_detail' fiche.id %}" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">Voir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #b9bbbe; padding: 20px; text-align: center;">Aucune fiche créée</p>
+    {% endif %}
+</div>
+
+<!-- Logs d'activité -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">📋 Historique d'Activité</h2>
+    {% if user_logs %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Action</th>
+                <th>Détails</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in user_logs %}
+            <tr>
+                <td>{{ log.created_at|date:"d/m/Y H:i:s" }}</td>
+                <td>
+                    <span style="background: #5865f2; padding: 2px 8px; border-radius: 3px; font-size: 11px;">
+                        {{ log.get_action_display }}
+                    </span>
+                </td>
+                <td>{{ log.new_value|default:"—" }}</td>
+                <td><code style="background: #36393f; padding: 2px 6px; border-radius: 3px; font-size: 11px;">{{ log.ip }}</code></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #b9bbbe; padding: 20px; text-align: center;">Aucune activité enregistrée</p>
+    {% endif %}
+</div>
+
+{% endblock %}

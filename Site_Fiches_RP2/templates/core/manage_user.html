@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Utilisateurs - Owner{% endblock %}
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<h1 style="color: #faa61a; margin-bottom: 30px;">👥 Gestion des Utilisateurs</h1>
+
+<!-- Filtres et recherche -->
+<div class="card">
+    <form method="get" style="display: flex; gap: 15px; align-items: end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 250px;">
+            <label style="display: block; margin-bottom: 5px; color: #b9bbbe;">Rechercher</label>
+            <input type="text" name="search" value="{{ search }}" placeholder="Nom, Discord ID, Email..." 
+                   style="width: 100%; padding: 10px; background: #36393f; border: 1px solid #202225; border-radius: 4px; color: #fff;">
+        </div>
+        
+        <div style="min-width: 200px;">
+            <label style="display: block; margin-bottom: 5px; color: #b9bbbe;">Filtrer par rôle</label>
+            <select name="role" style="width: 100%; padding: 10px; background: #36393f; border: 1px solid #202225; border-radius: 4px; color: #fff;">
+                <option value="">Tous les rôles</option>
+                {% for role in all_roles %}
+                <option value="{{ role.id }}" {% if role_filter == role.id|stringformat:"s" %}selected{% endif %}>{{ role.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">🔍 Rechercher</button>
+        <a href="{% url 'manage_users' %}" class="btn btn-success">🔄 Réinitialiser</a>
+    </form>
+</div>
+
+<!-- Statistiques -->
+<div class="grid grid-4" style="margin-top: 20px;">
+    <div class="stat-box">
+        <div class="stat-number">{{ users.count }}</div>
+        <div class="stat-label">Résultats trouvés</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ users|length }}</div>
+        <div class="stat-label">Utilisateurs affichés</div>
+    </div>
+</div>
+
+<!-- Liste des utilisateurs -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">Liste des Utilisateurs</h2>
+    
+    {% if users %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Utilisateur</th>
+                <th>Discord</th>
+                <th>Email</th>
+                <th>Rôles</th>
+                <th>Fiches</th>
+                <th>Commentaires</th>
+                <th>Inscription</th>
+                <th>Dernière connexion</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td><code style="background: #36393f; padding: 2px 6px; border-radius: 3px; font-size: 11px;">{{ user.id }}</code></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="user-avatar" style="width: 32px; height: 32px; font-size: 14px;">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar }}" alt="{{ user.username }}">
+                            {% else %}
+                                {{ user.username|slice:":1"|upper }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">{{ user.username }}</div>
+                            {% if user.is_owner %}
+                                <span class="owner-badge">OWNER</span>
+                            {% elif user.is_staff %}
+                                <span class="admin-badge">ADMIN</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size: 12px;">
+                        <div>{{ user.discord_tag }}</div>
+                        <code style="background: #36393f; padding: 2px 4px; border-radius: 2px; font-size: 10px;">{{ user.discord_id }}</code>
+                    </div>
+                </td>
+                <td>{{ user.email|default:"—" }}</td>
+                <td>
+                    {% for role in user.roles.all %}
+                        <span style="background: #5865f2; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 3px;">{{ role.name }}</span>
+                    {% empty %}
+                        <span style="color: #b9bbbe;">Aucun</span>
+                    {% endfor %}
+                </td>
+                <td><strong>{{ user.fiche_count }}</strong></td>
+                <td>{{ user.comment_count }}</td>
+                <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                <td>
+                    {% if user.last_login %}
+                        {{ user.last_login|date:"d/m/Y H:i" }}
+                    {% else %}
+                        <span style="color: #b9bbbe;">Jamais</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="{% url 'user_detail' user.id %}" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">📊 Détails</a>
+                        <a href="{% url 'user_edit_roles' user.id %}" class="btn btn-success" style="padding: 4px 8px; font-size: 12px;">🔧 Rôles</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; padding: 40px; color: #b9bbbe;">Aucun utilisateur trouvé.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

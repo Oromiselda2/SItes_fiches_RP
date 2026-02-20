@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Serveurs - Owner{% endblock %}
+{% block page_title %}Gestion des Serveurs{% endblock %}
+
+{% block content %}
+
+<h1 style="color: #faa61a; margin-bottom: 30px;">🖥️ Gestion des Serveurs Discord</h1>
+
+<!-- Actions rapides -->
+<div class="card">
+    <div style="display: flex; gap: 10px;">
+        <a href="/admin/fiches/server/add/" class="btn btn-success">➕ Ajouter un nouveau serveur</a>
+        <a href="{% url 'owner_dashboard' %}" class="btn btn-primary">← Retour au Dashboard</a>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="grid grid-3" style="margin-top: 20px;">
+    <div class="stat-box">
+        <div class="stat-number">{{ servers.count }}</div>
+        <div class="stat-label">Serveurs Total</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">
+            {% for server in servers %}
+                {{ server.fiche_count|add:0 }}{% if not forloop.last %}+{% endif %}
+            {% endfor %}
+        </div>
+        <div class="stat-label">Fiches Total</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">
+            {% for server in servers %}
+                {{ server.user_count|add:0 }}{% if not forloop.last %}+{% endif %}
+            {% endfor %}
+        </div>
+        <div class="stat-label">Utilisateurs Actifs</div>
+    </div>
+</div>
+
+<!-- Liste des serveurs -->
+<div class="card" style="margin-top: 20px;">
+    <h2 class="card-title">Liste des Serveurs</h2>
+    
+    {% if servers %}
+    <table>
+        <thead>
+            <tr>
+                <th>Serveur</th>
+                <th>Discord ID</th>
+                <th>Fiches</th>
+                <th>Utilisateurs</th>
+                <th>Admins</th>
+                <th>Config Temps RP</th>
+                <th>Date Création</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for server in servers %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        {% if server.icon %}
+                            <img src="{{ server.icon }}" style="width: 40px; height: 40px; border-radius: 8px;">
+                        {% else %}
+                            <div style="width: 40px; height: 40px; border-radius: 8px; background: #5865f2; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">
+                                {{ server.name|slice:":2"|upper }}
+                            </div>
+                        {% endif %}
+                        <strong>{{ server.name }}</strong>
+                    </div>
+                </td>
+                <td>
+                    <code style="background: #36393f; padding: 4px 8px; border-radius: 3px; font-size: 11px;">
+                        {{ server.discord_server_id }}
+                    </code>
+                </td>
+                <td><strong style="color: #5865f2;">{{ server.fiche_count }}</strong></td>
+                <td>{{ server.user_count }}</td>
+                <td>{{ server.admin_count }}</td>
+                <td>
+                    <div style="font-size: 12px;">
+                        <div>Ratio: <strong>{{ server.ratio_temps }}</strong></div>
+                        <div style="color: #b9bbbe;">Date RP: {{ server.date_rp_reference|date:"d/m/Y" }}</div>
+                    </div>
+                </td>
+                <td>{{ server.created_at|date:"d/m/Y" }}</td>
+                <td>
+                    <div style="display: flex; gap: 5px; flex-direction: column;">
+                        <a href="{% url 'server_detail' server.id %}" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">📊 Détails</a>
+                        <a href="/admin/fiches/server/{{ server.id }}/change/" class="btn btn-success" style="padding: 4px 8px; font-size: 12px;">✏️ Modifier</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; padding: 40px; color: #b9bbbe;">
+        Aucun serveur configuré. <a href="/admin/fiches/server/add/" style="color: #5865f2;">Ajoutez-en un maintenant !</a>
+    </p>
+    {% endif %}
+</div>
+
+<!-- Détails par serveur (cartes) -->
+<h2 style="margin-top: 40px; margin-bottom: 20px;">📋 Aperçu Détaillé</h2>
+<div class="grid grid-3">
+    {% for server in servers %}
+    <div class="card" style="background: #36393f;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            {% if server.icon %}
+                <img src="{{ server.icon }}" style="width: 56px; height: 56px; border-radius: 12px;">
+            {% else %}
+                <div style="width: 56px; height: 56px; border-radius: 12px; background: #5865f2; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px;">
+                    {{ server.name|slice:":2"|upper }}
+                </div>
+            {% endif %}
+            <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 18px; margin-bottom: 5px;">{{ server.name }}</div>
+                <div style="font-size: 11px; color: #b9bbbe;">{{ server.discord_server_id }}</div>
+            </div>
+        </div>
+        
+        <div style="background: #2f3136; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #b9bbbe;">📝 Fiches</span>
+                <strong style="color: #5865f2;">{{ server.fiche_count }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #b9bbbe;">👥 Utilisateurs</span>
+                <strong>{{ server.user_count }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: #b9bbbe;">⚙️ Admins</span>
+                <strong>{{ server.admin_count }}</strong>
+            </div>
+        </div>
+        
+        <div style="background: #2f3136; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <div style="color: #b9bbbe; font-size: 12px; margin-bottom: 8px;">⏰ Configuration Temps RP</div>
+            <div style="font-size: 13px;">
+                <div style="margin-bottom: 5px;">
+                    <strong>Ratio:</strong> {{ server.ratio_temps }} jours RP/jour réel
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Date RP actuelle:</strong> {{ server.get_date_rp_actuelle|date:"d/m/Y" }}
+                </div>
+                <div>
+                    <strong>Référence:</strong> {{ server.date_rp_reference|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'server_detail' server.id %}" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 13px;">📊 Gérer</a>
+            <a href="/admin/fiches/server/{{ server.id }}/change/" class="btn btn-success" style="flex: 1; padding: 10px; font-size: 13px;">✏️ Config</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

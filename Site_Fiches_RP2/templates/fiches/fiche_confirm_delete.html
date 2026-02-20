@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer {{ fiche.prenom }} {{ fiche.nom }}{% endblock %}
+{% block page_title %}Confirmation de suppression{% endblock %}
+
+{% block content %}
+
+<div class="card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+    
+    <h1 style="color: var(--danger); margin-bottom: 20px;">Supprimer cette fiche ?</h1>
+    
+    <div style="background: var(--bg-primary); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+        {% if fiche.avatar %}
+            <img src="{{ fiche.avatar.url }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+        {% endif %}
+        <h2 style="margin-bottom: 10px;">{{ fiche.prenom }} {{ fiche.nom }}</h2>
+        <p style="color: var(--text-secondary);">Serveur: {{ fiche.server.name }}</p>
+        <p style="color: var(--text-muted); font-size: 13px;">Créé le {{ fiche.created_at|date:"d/m/Y" }}</p>
+    </div>
+    
+    <div style="background: var(--danger); color: white; padding: 15px; border-radius: 6px; margin-bottom: 30px;">
+        <p style="margin: 0; font-weight: 600;">⚠️ Cette action est irréversible !</p>
+        <p style="margin: 10px 0 0 0; font-size: 14px;">
+            Toutes les informations de cette fiche seront définitivement supprimées.
+        </p>
+    </div>
+    
+    <form method="post" style="display: flex; gap: 10px; justify-content: center;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="padding: 12px 30px;">
+            🗑️ Oui, supprimer définitivement
+        </button>
+        <a href="{% url 'fiche_detail' fiche.id %}" class="btn btn-success" style="padding: 12px 30px;">
+            ❌ Non, annuler
+        </a>
+    </form>
+</div>
+
+{% endblock %}
