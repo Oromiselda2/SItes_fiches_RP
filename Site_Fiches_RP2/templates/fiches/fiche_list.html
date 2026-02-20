@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Fiches - Site Fiches RP{% endblock %}
+{% block page_title %}Toutes les Fiches{% endblock %}
+
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1>📝 Toutes les Fiches de Personnages</h1>
+    {% if user.is_authenticated %}
+    <a href="{% url 'fiche_create' %}" class="btn btn-success">➕ Créer une nouvelle fiche</a>
+    {% endif %}
+</div>
+
+<!-- Barre de recherche -->
+<div class="card">
+    <form method="get" action="{% url 'search_fiches' %}" style="display: flex; gap: 10px;">
+        <input type="text" name="q" placeholder="Rechercher un personnage ou un utilisateur..." 
+               value="{{ request.GET.q }}"
+               style="flex: 1;">
+        <button type="submit" class="btn btn-primary">🔍 Rechercher</button>
+    </form>
+</div>
+
+<!-- Statistiques -->
+<div class="grid grid-4" style="margin-top: 20px;">
+    <div class="stat-box">
+        <div class="stat-number">{{ fiches.count }}</div>
+        <div class="stat-label">Fiches Disponibles</div>
+    </div>
+</div>
+
+<!-- Liste des fiches -->
+{% if fiches %}
+<div class="grid grid-3" style="margin-top: 20px;">
+    {% for fiche in fiches %}
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px var(--shadow)'" 
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        
+        <!-- Avatar du personnage -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            {% if fiche.avatar %}
+                <img src="{{ fiche.avatar.url }}" 
+                     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-primary);">
+            {% else %}
+                <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--accent-primary); 
+                            display: flex; align-items: center; justify-content: center; margin: 0 auto; 
+                            font-size: 48px; font-weight: bold; color: white;">
+                    {{ fiche.prenom|slice:":1"|upper }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Nom du personnage -->
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 20px;">
+            {{ fiche.prenom }} {{ fiche.nom }}
+        </h3>
+        
+        <!-- Serveur -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-primary); 
+                        padding: 5px 12px; border-radius: 20px;">
+                {% if fiche.server.icon %}
+                    <img src="{{ fiche.server.icon }}" style="width: 20px; height: 20px; border-radius: 4px;">
+                {% endif %}
+                <span style="font-size: 13px; color: var(--text-secondary);">{{ fiche.server.name }}</span>
+            </div>
+        </div>
+        
+        <!-- Auteur -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; 
+                    background: var(--bg-primary); border-radius: 6px;">
+            <div class="user-avatar" style="width: 28px; height: 28px; font-size: 12px;">
+                {% if fiche.author.avatar %}
+                    <img src="{{ fiche.author.avatar }}" alt="{{ fiche.author.username }}">
+                {% else %}
+                    {{ fiche.author.username|slice:":1"|upper }}
+                {% endif %}
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size: 12px; color: var(--text-muted);">Créé par</div>
+                <div style="font-size: 14px; font-weight: 600;">{{ fiche.author.username }}</div>
+            </div>
+        </div>
+        
+        <!-- Date de création -->
+        <div style="text-align: center; margin-bottom: 15px; font-size: 12px; color: var(--text-muted);">
+            Créé le {{ fiche.created_at|date:"d/m/Y" }}
+        </div>
+        
+        <!-- Bouton voir la fiche -->
+        <a href="{% url 'fiche_detail' fiche.id %}" class="btn btn-primary" style="width: 100%; text-align: center;">
+            👁️ Voir la fiche
+        </a>
+        
+        <!-- Actions (si propriétaire) -->
+        {% if user == fiche.author %}
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <a href="{% url 'fiche_edit' fiche.id %}" class="btn btn-success" style="flex: 1; padding: 6px; font-size: 12px;">
+                ✏️ Modifier
+            </a>
+            <a href="{% url 'fiche_delete' fiche.id %}" class="btn btn-danger" style="flex: 1; padding: 6px; font-size: 12px;"
+               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette fiche ?')">
+                🗑️ Supprimer
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 60px 20px;">
+    <div style="font-size: 64px; margin-bottom: 20px;">📝</div>
+    <h2 style="margin-bottom: 10px;">Aucune fiche disponible</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+        Soyez le premier à créer une fiche de personnage !
+    </p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'fiche_create' %}" class="btn btn-success">➕ Créer ma première fiche</a>
+    {% else %}
+    <a href="{% url 'login' %}" class="btn btn-primary">Se connecter pour créer une fiche</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

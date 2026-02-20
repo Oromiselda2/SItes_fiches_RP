@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil - Site Fiches RP{% endblock %}
+{% block page_title %}Accueil{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="card" style="text-align: center; padding: 60px 20px; background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%); color: white; margin-bottom: 40px;">
+    <h1 style="font-size: 48px; margin-bottom: 20px; color: white;">🎭 Site Fiches RP</h1>
+    <p style="font-size: 20px; margin-bottom: 30px; opacity: 0.9;">
+        Créez et partagez vos fiches de personnages pour vos parties de jeu de rôle
+    </p>
+    
+    {% if user.is_authenticated %}
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'fiche_create' %}" class="btn btn-success" style="padding: 15px 30px; font-size: 18px;">
+                ➕ Créer une fiche
+            </a>
+            <a href="{% url 'fiche_list' %}" class="btn" style="background: white; color: var(--accent-primary); padding: 15px 30px; font-size: 18px;">
+                📝 Voir toutes les fiches
+            </a>
+        </div>
+    {% else %}
+        <a href="{% url 'login' %}" class="btn" style="background: white; color: var(--accent-primary); padding: 15px 30px; font-size: 18px;">
+            🎮 Se connecter avec Discord
+        </a>
+    {% endif %}
+</div>
+
+<!-- Fonctionnalités -->
+<h2 style="margin-bottom: 30px; text-align: center;">✨ Fonctionnalités</h2>
+<div class="grid grid-3" style="margin-bottom: 40px;">
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+        <h3 style="margin-bottom: 10px;">Fiches Complètes</h3>
+        <p style="color: var(--text-secondary);">
+            Créez des fiches détaillées avec physique, caractère, histoire et plus encore
+        </p>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 15px;">🎨</div>
+        <h3 style="margin-bottom: 10px;">Personnalisation CSS</h3>
+        <p style="color: var(--text-secondary);">
+            Personnalisez l'apparence de vos fiches avec votre propre CSS
+        </p>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 15px;">🖥️</div>
+        <h3 style="margin-bottom: 10px;">Multi-Serveurs</h3>
+        <p style="color: var(--text-secondary);">
+            Organisez vos fiches par serveur Discord avec gestion du temps RP
+        </p>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 15px;">⏰</div>
+        <h3 style="margin-bottom: 10px;">Calcul d'Âge RP</h3>
+        <p style="color: var(--text-secondary);">
+            L'âge de vos personnages s'adapte automatiquement au temps RP du serveur
+        </p>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 15px;">💬</div>
+        <h3 style="margin-bottom: 10px;">Commentaires</h3>
+        <p style="color: var(--text-secondary);">
+            Interagissez avec les fiches des autres joueurs via les commentaires
+        </p>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 15px;">🌙</div>
+        <h3 style="margin-bottom: 10px;">Mode Sombre/Clair</h3>
+        <p style="color: var(--text-secondary);">
+            Choisissez le thème qui vous convient le mieux
+        </p>
+    </div>
+</div>
+
+<!-- Fiches récentes -->
+{% if recent_fiches %}
+<h2 style="margin-bottom: 30px;">🆕 Fiches Récentes</h2>
+<div class="grid grid-3">
+    {% for fiche in recent_fiches %}
+    <div class="card" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px var(--shadow)'" 
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        
+        <!-- Avatar du personnage -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            {% if fiche.avatar %}
+                <img src="{{ fiche.avatar.url }}" 
+                     style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-primary);">
+            {% else %}
+                <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--accent-primary); 
+                            display: flex; align-items: center; justify-content: center; margin: 0 auto; 
+                            font-size: 40px; font-weight: bold; color: white;">
+                    {{ fiche.prenom|slice:":1"|upper }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Nom du personnage -->
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 18px;">
+            {{ fiche.prenom }} {{ fiche.nom }}
+        </h3>
+        
+        <!-- Serveur -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-primary); 
+                        padding: 5px 12px; border-radius: 20px; font-size: 12px;">
+                <span style="color: var(--text-secondary);">{{ fiche.server.name }}</span>
+            </div>
+        </div>
+        
+        <!-- Bouton voir la fiche -->
+        <a href="{% url 'fiche_detail' fiche.id %}" class="btn btn-primary" style="width: 100%; text-align: center; padding: 8px;">
+            👁️ Voir
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{% url 'fiche_list' %}" class="btn btn-primary">Voir toutes les fiches →</a>
+</div>
+{% endif %}
+
+<!-- Statistiques (si connecté) -->
+{% if user.is_authenticated %}
+<h2 style="margin-top: 50px; margin-bottom: 30px;">📊 Vos Statistiques</h2>
+<div class="grid grid-4">
+    <div class="stat-box">
+        <div class="stat-number">{{ user.fiches.count }}</div>
+        <div class="stat-label">Fiches Créées</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ user.comments.count }}</div>
+        <div class="stat-label">Commentaires</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ user_servers.count }}</div>
+        <div class="stat-label">Serveurs</div>
+    </div>
+    
+    <div class="stat-box">
+        <div class="stat-number">{{ user.admin_servers.count }}</div>
+        <div class="stat-label">Serveurs Admin</div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
